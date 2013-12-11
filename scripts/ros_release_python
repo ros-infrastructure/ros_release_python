@@ -1,0 +1,187 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import argparse
+try:
+    from configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
+import logging
+import os
+import shutil
+import subprocess
+import sys
+
+
+def get_name_and_version():
+    _print_section('Determine package name and version')
+    output = subprocess.check_output(['python', 'setup.py', '--name', '--version'])
+    lines = output.splitlines()
+    assert len(lines) == 2
+    name = lines[0].decode('ascii')
+    version = lines[1].decode('ascii')
+    print('Package: %s' % name)
+    print('Version: %s' % version)
+    return name, version
+
+
+def release_to_pip(name, version, upload):
+    _print_section('Release Python package to PIP')
+    if os.path.exists('dist'):
+        shutil.rmtree('dist')
+
+    targets = ['sdist']
+    msgs = ['Building sdist package']
+    if upload:
+        targets.extend(['register', 'upload'])
+        msgs.append('register and upload package to PIP')
+    _print_subsection('%s...' % ', '.join(msgs))
+    subprocess.check_call(['python2', 'setup.py'] + targets)
+
+    tarball = 'dist/%s-%s.tar.gz' % (name, version)
+    assert os.path.exists(tarball), "Failed to generate source tarball '%s'" % tarball
+    upload_cmd = ['scp', tarball, 'ros@ftp-osl.osuosl.org:/home/ros/data/download.ros.org/downloads/%s' % name]
+    if upload:
+        _print_subsection('Uploading package to download server...')
+        subprocess.check_call(upload_cmd)
+    else:
+        _print_subsection('Skip uploading package to download server')
+        print('# ' + ' '.join(upload_cmd))
+
+
+def release_python2_to_debian(name, version, upload):
+    release_to_debian(name, version, upload, 2)
+
+
+def release_python3_to_debian(name, version, upload):
+    release_to_debian(name, version, upload, 3)
+
+
+def release_to_debian(name, version, upload, python_version):
+    _print_section('Release Python %d package to apt repository' % python_version)
+    if os.path.exists('deb_dist'):
+        shutil.rmtree('deb_dist')
+    if os.path.exists('dist'):
+        shutil.rmtree('dist')
+
+    # link in stdeb.cfg file using either stdeb2.cfg or stdeb3.cfg
+    if os.path.islink('stdeb.cfg'):
+        os.unlink('stdeb.cfg')
+    if not os.path.exists('stdeb.cfg'):
+        os.symlink('stdeb%d.cfg' % python_version, 'stdeb.cfg')
+    else:
+        print("Using existing 'stdeb.cfg' file")
+
+    try:
+        _print_subsection('Building sdist_dsc and bdist_deb package...')
+        cmd = ['python%d' % python_version, 'setup.py', '--command-packages=stdeb.command', 'sdist_dsc']
+        if python_version == 2:
+            cmd.append('--workaround-548392=False')
+        cmd.append('bdist_deb')
+        subprocess.check_call(cmd)
+    finally:
+        if os.path.islink('stdeb.cfg'):
+            os.unlink('stdeb.cfg')
+
+    # link in dput file or use existing file
+    if os.path.islink('dput.cf'):
+        os.unlink('dput.cf')
+    if not os.path.exists('dput.cf'):
+        os.symlink(_get_dput_path(), 'dput.cf')
+    else:
+        print("Using existing 'dput.cf' file")
+
+    try:
+        config = RawConfigParser()
+        config.read('dput.cf')
+        cmds = []
+        for apt_repo in config.sections():
+            changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
+            assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
+            cmds.append(['dput', '-u', '-c', 'dput.cf', apt_repo, changes_file])
+
+        if upload:
+            _print_subsection('Uploading package to apt repositories...')
+            for cmd in cmds:
+                subprocess.check_call(cmd)
+        else:
+            _print_subsection('Skip uploading package to apt repositories')
+            for cmd in cmds:
+                print('# ' + ' '.join(cmd))
+    finally:
+        if os.path.islink('dput.cf'):
+            os.unlink('dput.cf')
+
+
+def _get_dput_path():
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'dput.cf')
+
+
+def _print_section(msg):
+    print('\n== %s' % msg)
+
+
+def _print_subsection(msg):
+    print('\n-- %s' % msg)
+
+
+def _run_command(cmd):
+    subprocess.check_call
+
+
+class TargetAction(argparse.Action):
+    CHOICES = ['deb2','deb3', 'pip']
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values:
+            for value in values:
+                if value not in self.CHOICES:
+                    raise argparse.ArgumentError(self, 'invalid choice: %s (choose from: %s)' % (value, ', '.join(self.CHOICES)))
+            if len(values) > len(set(values)):
+                raise argparse.ArgumentError(self, 'non-unique choice: %s (choose from: %s)' % (', '.join(values), ', '.join(self.CHOICES)))
+            setattr(namespace, self.dest, values)
+
+
+def main(argv=sys.argv[1:]):
+    parser = argparse.ArgumentParser(
+        description='Release a Python package into PIP as well as the ROS apt repositories.')
+
+    parser.add_argument('targets', nargs='*', action=TargetAction, default=TargetAction.CHOICES, metavar='TARGET',
+        help='The list of targets to release to (default: %s).' % ' '.join(TargetAction.CHOICES))
+
+    parser.add_argument('--debug', action='store_true', default=False,
+        help='Print stacktrace to stderr in case of errors.')
+    parser.add_argument('--upload', action='store_true', default=False,
+        help='Perform actual upload steps')
+    parser.add_argument('--verbose', action='store_true', default=False,
+        help='Print verbose information')
+
+    args = parser.parse_args(argv)
+
+    try:
+        (name, version) = get_name_and_version()
+        for target in args.targets:
+            if target == 'deb2':
+                release_python2_to_debian(name, version, args.upload)
+            if target == 'deb3':
+                release_python3_to_debian(name, version, args.upload)
+            if target == 'pip':
+                release_to_pip(name, version, args.upload)
+    except subprocess.CalledProcessError as e:
+        print('\nCommand [%s] returned non-zero exit status %d' % (' '.join(e.cmd), e.returncode), file=sys.stderr)
+        return 1
+    except Exception as e:
+        if args.debug:
+            print()
+            raise
+        if str(e):
+            print('\n' + str(e), file=sys.stderr)
+        else:
+            print('\n' + type(e).__name__, file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == '__main__':
+    rc = main()
+    sys.exit(rc)
