@@ -50,14 +50,6 @@ def release_to_pip(name, version, upload):
         print('# ' + ' '.join(upload_cmd))
 
 
-def release_python2_to_debian(name, version, upload):
-    release_to_debian(name, version, upload, 2)
-
-
-def release_python3_to_debian(name, version, upload):
-    release_to_debian(name, version, upload, 3)
-
-
 def release_to_debian(name, version, upload, python_version):
     _print_section('Release Python %d package to apt repository' % python_version)
     if os.path.exists('deb_dist'):
@@ -96,6 +88,7 @@ def release_to_debian(name, version, upload, python_version):
         config = RawConfigParser()
         config.read('dput.cf')
         cmds = []
+        name = name.replace('_', '-')
         for apt_repo in config.sections():
             changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
             assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
@@ -153,8 +146,6 @@ def main(argv=sys.argv[1:]):
         help='Print stacktrace to stderr in case of errors.')
     parser.add_argument('--upload', action='store_true', default=False,
         help='Perform actual upload steps')
-    parser.add_argument('--verbose', action='store_true', default=False,
-        help='Print verbose information')
 
     args = parser.parse_args(argv)
 
@@ -162,9 +153,9 @@ def main(argv=sys.argv[1:]):
         (name, version) = get_name_and_version()
         for target in args.targets:
             if target == 'deb2':
-                release_python2_to_debian(name, version, args.upload)
+                release_to_debian(name, version, args.upload, 2)
             if target == 'deb3':
-                release_python3_to_debian(name, version, args.upload)
+                release_to_debian(name, version, args.upload, 3)
             if target == 'pip':
                 release_to_pip(name, version, args.upload)
     except subprocess.CalledProcessError as e:
