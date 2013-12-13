@@ -31,23 +31,29 @@ def release_to_pip(name, version, upload):
     if os.path.exists('dist'):
         shutil.rmtree('dist')
 
-    targets = ['sdist']
+    cmd = ['python2', 'setup.py', 'sdist']
+    upload_targets = ['register', 'upload']
     msgs = ['Building sdist package']
     if upload:
-        targets.extend(['register', 'upload'])
+        cmd.extend(upload_targets)
         msgs.append('register and upload package to PIP')
     _print_subsection('%s...' % ', '.join(msgs))
-    subprocess.check_call(['python2', 'setup.py'] + targets)
+    if upload:
+        print('# ' + ' '.join(cmd))
+    else:
+        print('# ' + ' '.join(cmd) + '  # ' + ' '.join(upload_targets))
+    subprocess.check_call(cmd)
 
     tarball = 'dist/%s-%s.tar.gz' % (name, version)
     assert os.path.exists(tarball), "Failed to generate source tarball '%s'" % tarball
     upload_cmd = ['scp', tarball, 'ros@ftp-osl.osuosl.org:/home/ros/data/download.ros.org/downloads/%s' % name]
     if upload:
         _print_subsection('Uploading package to download server...')
-        subprocess.check_call(upload_cmd)
     else:
         _print_subsection('Skip uploading package to download server')
-        print('# ' + ' '.join(upload_cmd))
+    print('# ' + ' '.join(upload_cmd))
+    if upload:
+        subprocess.check_call(upload_cmd)
 
 
 def release_to_debian(name, version, upload, python_version):
@@ -71,6 +77,7 @@ def release_to_debian(name, version, upload, python_version):
         if python_version == 2:
             cmd.append('--workaround-548392=False')
         cmd.append('bdist_deb')
+        print('# ' + ' '.join(cmd))
         subprocess.check_call(cmd)
     finally:
         if os.path.islink('stdeb.cfg'):
@@ -94,12 +101,12 @@ def release_to_debian(name, version, upload, python_version):
 
     if upload:
         _print_subsection('Uploading package to apt repositories...')
-        for cmd in cmds:
-            subprocess.check_call(cmd)
     else:
         _print_subsection('Skip uploading package to apt repositories')
-        for cmd in cmds:
-            print('# ' + ' '.join(cmd))
+    for cmd in cmds:
+        print('# ' + ' '.join(cmd))
+        if upload:
+            subprocess.check_call(cmd)
 
 
 def _get_dput_path():
