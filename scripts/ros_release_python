@@ -76,35 +76,30 @@ def release_to_debian(name, version, upload, python_version):
         if os.path.islink('stdeb.cfg'):
             os.unlink('stdeb.cfg')
 
-    # link in dput file or use existing file
-    if os.path.islink('dput.cf'):
-        os.unlink('dput.cf')
-    if not os.path.exists('dput.cf'):
-        os.symlink(_get_dput_path(), 'dput.cf')
-    else:
+    # decide which dput file to use
+    if os.path.exists('dput.cf'):
         print("Using existing 'dput.cf' file")
+        dput_path = 'dput.cf'
+    else:
+        dput_path = _get_dput_path()
 
-    try:
-        config = RawConfigParser()
-        config.read('dput.cf')
-        cmds = []
-        name = name.replace('_', '-')
-        for apt_repo in config.sections():
-            changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
-            assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
-            cmds.append(['dput', '-u', '-c', 'dput.cf', apt_repo, changes_file])
+    config = RawConfigParser()
+    config.read(dput_path)
+    cmds = []
+    name = name.replace('_', '-')
+    for apt_repo in config.sections():
+        changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
+        assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
+        cmds.append(['dput', '-u', '-c', '"%s"' % dput_path, apt_repo, changes_file])
 
-        if upload:
-            _print_subsection('Uploading package to apt repositories...')
-            for cmd in cmds:
-                subprocess.check_call(cmd)
-        else:
-            _print_subsection('Skip uploading package to apt repositories')
-            for cmd in cmds:
-                print('# ' + ' '.join(cmd))
-    finally:
-        if os.path.islink('dput.cf'):
-            os.unlink('dput.cf')
+    if upload:
+        _print_subsection('Uploading package to apt repositories...')
+        for cmd in cmds:
+            subprocess.check_call(cmd)
+    else:
+        _print_subsection('Skip uploading package to apt repositories')
+        for cmd in cmds:
+            print('# ' + ' '.join(cmd))
 
 
 def _get_dput_path():
