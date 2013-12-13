@@ -97,7 +97,7 @@ def release_to_debian(name, version, upload, python_version):
     for apt_repo in config.sections():
         changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
         assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
-        cmds.append(['dput', '-u', '-c', '"%s"' % dput_path, apt_repo, changes_file])
+        cmds.append(['dput', '-u', '-c', dput_path, apt_repo, changes_file])
 
     if upload:
         _print_subsection('Uploading package to apt repositories...')
