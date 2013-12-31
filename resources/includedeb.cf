@@ -1,0 +1,11 @@
+[all-building]
+basepath                = /var/www/repos/building
+includedeb_command      = ssh rosbuild@repos.ros.org -- /usr/bin/reprepro -b /var/www/repos/building -V includedeb
+
+[all-ros-shadow-fixed]
+basepath                = /var/www/repos/ros-shadow-fixed/ubuntu
+includedeb_command      = ssh rosbuild@repos.ros.org -- /usr/bin/reprepro -b /var/www/repos/ros-shadow-fixed/ubuntu -V includedeb
+
+[all-ros]
+basepath                = /var/www/repos/ros/ubuntu
+includedeb_command      = ssh rosbuild@repos.ros.org -- /usr/bin/reprepro -b /var/www/repos/ros/ubuntu -V includedeb
