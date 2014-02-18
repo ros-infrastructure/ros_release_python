@@ -6,6 +6,7 @@ Setup
 
 The following dependencies need to be installed before being able to run the `ros_release_python` script:
 
+ * Install dput
  * Install the latest / a customized version of stdeb:
    * Python 2:
      * `sudo pip install stdeb`
