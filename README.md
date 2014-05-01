@@ -9,6 +9,8 @@ The following dependencies need to be installed before being able to run the `ro
  * Install dput: `sudo apt-get install dput`
  * Install apt-file: `sudo apt-get install apt-file`
   * Then run `apt-file update`
+ * Install `setuptools` for python3: `sudo apt-get install python3-setuptools`
+ * Install `python-all`: `sudo apt-get install python-all`
  * Install the latest / a customized version of stdeb:
    * Python 2:
      * `sudo pip install stdeb`
