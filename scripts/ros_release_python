@@ -73,8 +73,6 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
     try:
         _print_subsection('Building sdist_dsc and bdist_deb package...')
         cmd = ['python%d' % python_version, 'setup.py', '--command-packages=stdeb.command', 'sdist_dsc']
-        if python_version == 2:
-            cmd.append('--workaround-548392=False')
         cmd.append('bdist_deb')
         print('# ' + ' '.join(cmd))
         subprocess.check_call(cmd)
@@ -91,7 +89,7 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
     config = RawConfigParser()
     config.read(dput_path)
     cmds = []
-    name = name.replace('_', '' if python_version == 2 else '-')
+    name = name.replace('_', '-')
     for apt_repo in config.sections():
         changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
         assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
