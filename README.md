@@ -52,7 +52,7 @@ On Precise:
  	}
 ```
 
-On Saucy:
+On Saucy / Trusty:
 ```
 /usr/share/perl5/Debian/Debhelper/Buildsystem$ diff -u python_distutils.pm python3_distutils.pm
 --- python_distutils.pm	2013-07-01 03:28:26.000000000 -0700
