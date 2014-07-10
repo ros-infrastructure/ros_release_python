@@ -17,7 +17,9 @@ The following dependencies need to be installed before being able to run the `ro
        * This must be from pip. The 0.6.0 version from debian will not work.
    * Python 3:
      * `git clone https://github.com/dirk-thomas/stdeb`
+       * On a newly installed Trusty machine I needed the `distutils-based-on-python-version-based-on-0.7.1` of the stdeb fork
      * `sudo python3.3 setup.py install`
+       * On a newly installed Trusty machine I needed the `current` branch of this repo
  * Create a debhelper file for Python 3 distutils releases:
    * `cd /usr/share/perl5/Debian/Debhelper/Buildsystem && sudo cp python_distutils.pm python3_distutils.pm`
    * Modify the new file `/usr/share/perl5/Debian/Debhelper/Buildsystem/python3_distutils.pm` with the following changes (as described in http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=597105#35 ): 
