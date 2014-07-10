@@ -72,26 +72,22 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
 
     try:
         _print_subsection('Building sdist_dsc and bdist_deb package...')
-        cmd = ['python%d' % python_version, 'setup.py', '--command-packages=stdeb.command', 'sdist_dsc']
-        if python_version == 2:
-            cmd.append('--workaround-548392=False')
-        cmd.append('bdist_deb')
+        cmd = ['python%d' % python_version, 'setup.py', '--command-packages=stdeb.command', 'sdist_dsc', 'bdist_deb']
         print('# ' + ' '.join(cmd))
         subprocess.check_call(cmd)
     finally:
         if os.path.islink('stdeb.cfg'):
             os.unlink('stdeb.cfg')
-        if python_version != 2:
-            tarball = '%s-%s.tar.gz' % (name, version)
-            if os.path.isfile(tarball):
-                os.unlink(tarball)
+        tarball = '%s-%s.tar.gz' % (name, version)
+        if os.path.isfile(tarball):
+            os.unlink(tarball)
 
     dput_path = _get_config_path('dput.cf')
 
     config = RawConfigParser()
     config.read(dput_path)
     cmds = []
-    name = name.replace('_', '' if python_version == 2 else '-')
+    name = name.replace('_', '-')
     for apt_repo in config.sections():
         changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
         assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
@@ -120,22 +116,21 @@ def includedeb(name, version, upload, python_version):
     config.read(stdeb_file)
     suites = config.get('DEFAULT', 'Suite').split(' ')
 
-    folder_name = name.replace('_', '' if python_version == 2 else '-')
-    pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name.replace('_', '-'))
+    name = name.replace('_', '-')
+    pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
 
     includedeb_path = _get_config_path('includedeb.cf')
 
     config = RawConfigParser()
     config.read(includedeb_path)
     cmds = []
-    name = name.replace('_', '' if python_version == 2 else '-')
     for apt_repo in config.sections():
         basepath = config.get(apt_repo, 'basepath')
         includedeb_command = config.get(apt_repo, 'includedeb_command')
         for suite in suites:
             cmd = includedeb_command.split(' ')
             cmd.append(suite)
-            cmd.append('%s/pool/main/%s/%s/%s_%s-1_all.deb' % (basepath, name[0], folder_name, pkg_name, version))
+            cmd.append('%s/pool/main/%s/%s/%s_%s-1_all.deb' % (basepath, name[0], name, pkg_name, version))
             cmds.append(cmd)
 
     _print_subsection('Propagate Debian package to listed suites...')

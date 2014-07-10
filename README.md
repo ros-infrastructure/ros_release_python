@@ -14,7 +14,7 @@ The following dependencies need to be installed before being able to run the `ro
  * Install the latest / a customized version of stdeb:
    * Python 2:
      * `sudo pip install stdeb`
-       * This must be from pip. The 0.6.0 version from debian will not work.
+       * This must be at least version 0.7.1 from pip. The version 0.6.0 from Debian will not work.
    * Python 3:
      * `git clone https://github.com/dirk-thomas/stdeb`
      * `sudo python3.3 setup.py install`
