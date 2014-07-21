@@ -16,7 +16,7 @@ The following dependencies need to be installed before being able to run the `ro
      * `sudo pip install stdeb`
        * This must be at least version 0.7.1 from pip. The version 0.6.0 from Debian will not work.
    * Python 3:
-     * `git clone https://github.com/dirk-thomas/stdeb`
+     * `git clone -b distutils-based-on-python-version-based-on-0.7.1 https://github.com/dirk-thomas/stdeb`
      * `sudo python3.3 setup.py install`
  * Create a debhelper file for Python 3 distutils releases:
    * `cd /usr/share/perl5/Debian/Debhelper/Buildsystem && sudo cp python_distutils.pm python3_distutils.pm`
