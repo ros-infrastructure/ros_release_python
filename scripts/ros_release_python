@@ -70,9 +70,15 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
     else:
         print("Using existing 'stdeb.cfg' file")
 
+    source_pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
+    source_pkg_name = source_pkg_name.replace('_','-')
+
     try:
         _print_subsection('Building sdist_dsc and bdist_deb package...')
-        cmd = ['python%d' % python_version, 'setup.py', '--command-packages=stdeb.command', 'sdist_dsc', 'bdist_deb']
+        cmd = ['python%d' % python_version, 'setup.py',
+               '--command-packages=stdeb.command',
+               'sdist_dsc', '--source', source_pkg_name,
+               'bdist_deb']
         print('# ' + ' '.join(cmd))
         subprocess.check_call(cmd)
     finally:
@@ -87,10 +93,17 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
     config = RawConfigParser()
     config.read(dput_path)
     cmds = []
-    name = name.replace('_', '-')
+
+    # upload source (.dsc and so on)
     for apt_repo in config.sections():
-        changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (name, version)
-        assert os.path.exists(changes_file), "Failed to generate changes file '%s'" % changes_file
+        changes_file = 'deb_dist/%s_%s-1_source.changes' % (source_pkg_name, version)
+        assert os.path.exists(changes_file), "Failed to generate source changes file '%s'" % changes_file
+        cmds.append(['dput', '-u', '-c', dput_path, apt_repo, changes_file])
+
+    # upload binary (.deb) packages
+    for apt_repo in config.sections():
+        changes_file = 'deb_dist/%s_%s-1_amd64.changes' % (source_pkg_name, version)
+        assert os.path.exists(changes_file), "Failed to generate binary changes file '%s'" % changes_file
         cmds.append(['dput', '-u', '-c', dput_path, apt_repo, changes_file])
 
     if upload:
