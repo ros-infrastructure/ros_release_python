@@ -14,10 +14,10 @@ The following dependencies need to be installed before being able to run the `ro
  * Install the latest version of stdeb:
    * Python 2:
      * `sudo pip install stdeb`
-       * This must be at least version 0.8.1. Older versions will not work.
+       * This must be at least version 0.8.2. Older versions will not work.
    * Python 3:
      * `sudo pip3 install stdeb`
-       * This must be at least version 0.8.1. Older versions will not work.
+       * This must be at least version 0.8.2. Older versions will not work.
 
 Prepare a Python package
 ------------------------
