@@ -11,7 +11,7 @@ import os
 import shutil
 import subprocess
 import sys
-
+import tempfile
 
 def get_name_and_version():
     _print_section('Determine package name and version')
@@ -54,6 +54,27 @@ def release_to_pip(name, version, upload):
     if upload:
         subprocess.check_call(upload_cmd)
 
+def _translate3(input_line):
+    fixup = {'Package:':'Package3:',
+             'Depends:':'Depends3:',
+             'Architecture:':'Architecture3:',
+             }
+    for key in fixup:
+        if input_line.startswith(key):
+            new_line = fixup[key] + input_line[ len(key): ]
+            break
+        else:
+            new_line = input_line
+
+    return new_line
+
+def fixup_stdeb3():
+    out_fname = tempfile.mktemp()
+    with open(out_fname,mode='w') as out_fd:
+        with open('stdeb3.cfg',mode='r') as in_fd:
+            for input_line in in_fd:
+                out_fd.write(_translate3(input_line))
+    return out_fname
 
 def release_to_debian(name, version, upload, ignore_upload_error, python_version):
     _print_section('Release Python %d package to apt repository' % python_version)
@@ -65,19 +86,31 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
     # link in stdeb.cfg file using either stdeb2.cfg or stdeb3.cfg
     if os.path.islink('stdeb.cfg'):
         os.unlink('stdeb.cfg')
+    new_fname = None
     if not os.path.exists('stdeb.cfg'):
-        os.symlink('stdeb%d.cfg' % python_version, 'stdeb.cfg')
+        if python_version == 3:
+            new_fname = fixup_stdeb3()
+            os.symlink(new_fname, 'stdeb.cfg')
+        else:
+            os.symlink('stdeb%d.cfg' % python_version, 'stdeb.cfg')
     else:
         print("Using existing 'stdeb.cfg' file")
 
     source_pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
     source_pkg_name = source_pkg_name.replace('_','-')
 
+    if python_version == 2:
+        other_python_version = 3
+    else:
+        other_python_version = 2
+
     try:
         _print_subsection('Building sdist_dsc and bdist_deb package...')
         cmd = ['python%d' % python_version, 'setup.py',
                '--command-packages=stdeb.command',
                'sdist_dsc', '--source', source_pkg_name,
+               '--with-python%d' % python_version, 'true',
+               '--with-python%d' % other_python_version, 'false',
                'bdist_deb']
         print('# ' + ' '.join(cmd))
         subprocess.check_call(cmd)
@@ -87,6 +120,8 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
         tarball = '%s-%s.tar.gz' % (name, version)
         if os.path.isfile(tarball):
             os.unlink(tarball)
+        if new_fname is not None:
+            os.unlink(new_fname)
 
     dput_path = _get_config_path('dput.cf')
 
