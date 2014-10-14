@@ -11,7 +11,7 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
+
 
 def get_name_and_version():
     _print_section('Determine package name and version')
@@ -54,27 +54,6 @@ def release_to_pip(name, version, upload):
     if upload:
         subprocess.check_call(upload_cmd)
 
-def _translate3(input_line):
-    fixup = {'Package:':'Package3:',
-             'Depends:':'Depends3:',
-             'Architecture:':'Architecture3:',
-             }
-    for key in fixup:
-        if input_line.startswith(key):
-            new_line = fixup[key] + input_line[ len(key): ]
-            break
-        else:
-            new_line = input_line
-
-    return new_line
-
-def fixup_stdeb3():
-    out_fname = tempfile.mktemp()
-    with open(out_fname,mode='w') as out_fd:
-        with open('stdeb3.cfg',mode='r') as in_fd:
-            for input_line in in_fd:
-                out_fd.write(_translate3(input_line))
-    return out_fname
 
 def release_to_debian(name, version, upload, ignore_upload_error, python_version):
     _print_section('Release Python %d package to apt repository' % python_version)
@@ -83,21 +62,8 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
     if os.path.exists('dist'):
         shutil.rmtree('dist')
 
-    # link in stdeb.cfg file using either stdeb2.cfg or stdeb3.cfg
-    if os.path.islink('stdeb.cfg'):
-        os.unlink('stdeb.cfg')
-    new_fname = None
-    if not os.path.exists('stdeb.cfg'):
-        if python_version == 3:
-            new_fname = fixup_stdeb3()
-            os.symlink(new_fname, 'stdeb.cfg')
-        else:
-            os.symlink('stdeb%d.cfg' % python_version, 'stdeb.cfg')
-    else:
-        print("Using existing 'stdeb.cfg' file")
-
     source_pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
-    source_pkg_name = source_pkg_name.replace('_','-')
+    source_pkg_name = source_pkg_name.replace('_', '-')
 
     if python_version == 2:
         other_python_version = 3
@@ -115,13 +81,9 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
         print('# ' + ' '.join(cmd))
         subprocess.check_call(cmd)
     finally:
-        if os.path.islink('stdeb.cfg'):
-            os.unlink('stdeb.cfg')
         tarball = '%s-%s.tar.gz' % (name, version)
         if os.path.isfile(tarball):
             os.unlink(tarball)
-        if new_fname is not None:
-            os.unlink(new_fname)
 
     dput_path = _get_config_path('dput.cf')
 
@@ -156,12 +118,8 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
 
 
 def includedeb(name, version, upload, python_version):
-    suites = []
-    stdeb_file = 'stdeb%d.cfg' % python_version
-    if os.path.exists('stdeb.cfg') and not os.path.islink('stdeb.cfg'):
-        stdeb_file = 'stdeb.cfg'
     config = RawConfigParser()
-    config.read(stdeb_file)
+    config.read('stdeb.cfg')
     suites = config.get('DEFAULT', 'Suite').split(' ')
 
     name = name.replace('_', '-')
@@ -218,9 +176,11 @@ class TargetAction(argparse.Action):
         if values:
             for value in values:
                 if value not in self.CHOICES:
-                    raise argparse.ArgumentError(self, 'invalid choice: %s (choose from: %s)' % (value, ', '.join(self.CHOICES)))
+                    raise argparse.ArgumentError(
+                        self, 'invalid choice: %s (choose from: %s)' % (value, ', '.join(self.CHOICES)))
             if len(values) > len(set(values)):
-                raise argparse.ArgumentError(self, 'non-unique choice: %s (choose from: %s)' % (', '.join(values), ', '.join(self.CHOICES)))
+                raise argparse.ArgumentError(
+                    self, 'non-unique choice: %s (choose from: %s)' % (', '.join(values), ', '.join(self.CHOICES)))
             setattr(namespace, self.dest, values)
 
 
