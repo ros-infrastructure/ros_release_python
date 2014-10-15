@@ -6,25 +6,33 @@ Setup
 
 The following dependencies need to be installed before being able to run the `ros_release_python` script:
 
- * Install dput: `sudo apt-get install dput`
- * Install apt-file: `sudo apt-get install apt-file`
-  * Then run `apt-file update`
- * Install `setuptools` for python3: `sudo apt-get install python3-setuptools`
- * Install `python-all`: `sudo apt-get install python-all`
- * Install the latest version of stdeb:
-   * Python 2:
-     * `sudo pip install stdeb`
-       * This must be at least version 0.8.2. Older versions will not work.
-   * Python 3:
-     * `sudo pip3 install stdeb`
-       * This must be at least version 0.8.2. Older versions will not work.
+ * Install dput:
+   * `sudo apt-get install dput`
+ * Install apt-file:
+   * `sudo apt-get install apt-file`
+   * and run:
+   * `apt-file update`
+ * Install setuptools:
+   * `sudo apt-get install python-setuptools python3-setuptools`
+ * Install Python "all":
+   * `sudo apt-get install python-all python3-all`
+ * Install PIP:
+   * `sudo apt-get install python-pip python3-pip`
+ * Install the latest version of stdeb (at least 0.8.2 - older versions willl not work):
+   * `sudo pip install stdeb`
+   * `sudo pip3 install stdeb`
 
 Prepare a Python package
 ------------------------
 
-The Python package needs `stdeb2.cfg` and `stdeb3.cfg` files beside the `setup.py` file.
+The Python package needs a `stdeb.cfg` file beside the `setup.py` file.
 
 Release a Python package
 ------------------------
 
 Invoke `scripts/ros_release_python --upload` in the root folder of the Python package.
+
+Release a Python package only into new suites
+---------------------------------------------
+
+Invoke `scripts/ros_release_python --includedeb --upload` in the root folder of the Python package.
