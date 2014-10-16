@@ -29,6 +29,8 @@ def release_to_pip(name, version, upload):
     _print_section('Release Python package to PIP')
     if os.path.exists('dist'):
         shutil.rmtree('dist')
+    if os.path.exists('%s.egg-info' % name):
+        shutil.rmtree('%s.egg-info' % name)
 
     cmd = ['python2', 'setup.py', 'sdist']
     upload_targets = ['register', 'upload']
@@ -117,6 +119,14 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
                     raise
 
 
+def clean(name):
+    subfolders = ['deb_dist', 'dist', '%s.egg-info' % name]
+    for subfolder in subfolders:
+        if os.path.exists(subfolder):
+            _print_subsection("Deleting subfolder '%s'..." % subfolder)
+            shutil.rmtree(subfolder)
+
+
 def includedeb(name, version, upload, python_version):
     config = RawConfigParser()
     config.read('stdeb.cfg')
@@ -191,6 +201,8 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('targets', nargs='*', action=TargetAction, default=TargetAction.CHOICES, metavar='TARGET',
                         help='The list of targets to release to (default: %s).' % ' '.join(TargetAction.CHOICES))
 
+    parser.add_argument('--clean', action='store_true', default=False,
+                        help="Delete all generated subfolders (ignores all targets).")
     parser.add_argument('--debug', action='store_true', default=False,
                         help='Print stacktrace to stderr in case of errors.')
     parser.add_argument('--upload', action='store_true', default=False,
@@ -204,7 +216,9 @@ def main(argv=sys.argv[1:]):
 
     try:
         (name, version) = get_name_and_version()
-        if not args.includedeb:
+        if args.clean:
+            clean(name)
+        elif not args.includedeb:
             for target in args.targets:
                 if target == 'deb2':
                     release_to_debian(name, version, args.upload, args.ignore_upload_error, 2)
