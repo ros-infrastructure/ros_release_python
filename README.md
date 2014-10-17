@@ -22,6 +22,18 @@ The following dependencies need to be installed before being able to run the `ro
    * `sudo pip install stdeb`
    * `sudo pip3 install stdeb`
 
+Note: Make sure `pip` is for Python2, because sometimes when you install pip for Python3 (like on precise) it overwrites `pip` as pip for Python3. You can explicitly invoke pip from Python2 like this:
+
+```
+$ sudo python -c "from pkg_resources import load_entry_point; load_entry_point('pip', 'console_scripts', 'pip')()" install -U stdeb
+```
+
+Or with Python3 like this:
+
+```
+$ sudo python3 -c "from pkg_resources import load_entry_point; load_entry_point('pip', 'console_scripts', 'pip')()" install -U stdeb
+```
+
 Prepare a Python package
 ------------------------
 
