@@ -130,7 +130,10 @@ def clean(name):
 def includedeb(name, version, upload, python_version):
     config = RawConfigParser()
     config.read('stdeb.cfg')
-    suites = config.get('DEFAULT', 'Suite').split(' ')
+    if python_version == 3 and config.has_option('DEFAULT', 'Suite3'):
+        suites = config.get('DEFAULT', 'Suite3').split(' ')
+    else:
+        suites = config.get('DEFAULT', 'Suite').split(' ')
 
     name = name.replace('_', '-')
 
