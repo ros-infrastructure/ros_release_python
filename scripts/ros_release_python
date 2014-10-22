@@ -27,10 +27,7 @@ def get_name_and_version():
 
 def release_to_pip(name, version, upload):
     _print_section('Release Python package to PIP')
-    if os.path.exists('dist'):
-        shutil.rmtree('dist')
-    if os.path.exists('%s.egg-info' % name):
-        shutil.rmtree('%s.egg-info' % name)
+    clean(name)
 
     cmd = ['python2', 'setup.py', 'sdist']
     upload_targets = ['register', 'upload']
@@ -59,10 +56,7 @@ def release_to_pip(name, version, upload):
 
 def release_to_debian(name, version, debian_version, upload, ignore_upload_error, python_version):
     _print_section('Release Python %d package to apt repository' % python_version)
-    if os.path.exists('deb_dist'):
-        shutil.rmtree('deb_dist')
-    if os.path.exists('dist'):
-        shutil.rmtree('dist')
+    clean(name)
 
     source_pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
     source_pkg_name = source_pkg_name.replace('_', '-')
@@ -122,7 +116,7 @@ def release_to_debian(name, version, debian_version, upload, ignore_upload_error
 
 
 def clean(name):
-    subfolders = ['deb_dist', 'dist', '%s.egg-info' % name]
+    subfolders = ['deb_dist', 'dist', '%s.egg-info' % name, 'src/%s.egg-info' % name]
     for subfolder in subfolders:
         if os.path.exists(subfolder):
             _print_subsection("Deleting subfolder '%s'..." % subfolder)
