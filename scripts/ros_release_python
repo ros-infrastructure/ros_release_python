@@ -79,6 +79,7 @@ def release_to_debian(name, version, upload, ignore_upload_error, python_version
                'sdist_dsc', '--source', source_pkg_name,
                '--with-python%d' % python_version, 'true',
                '--with-python%d' % other_python_version, 'false',
+               '--force-x-python3-version',
                'bdist_deb']
         print('# ' + ' '.join(cmd))
         subprocess.check_call(cmd)

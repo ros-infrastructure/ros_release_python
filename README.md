@@ -18,7 +18,7 @@ The following dependencies need to be installed before being able to run the `ro
    * `sudo apt-get install python-all python3-all`
  * Install PIP:
    * `sudo apt-get install python-pip python3-pip`
- * Install the latest version of stdeb (at least 0.8.2 - older versions willl not work):
+ * Install the stdeb (from this PR: https://github.com/astraw/stdeb/pull/83):
    * `sudo pip install stdeb`
    * `sudo pip3 install stdeb`
 
