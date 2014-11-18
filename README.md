@@ -42,7 +42,8 @@ The Python package needs a `stdeb.cfg` file beside the `setup.py` file.
 Release a Python package
 ------------------------
 
-Invoke `scripts/ros_release_python --upload` in the root folder of the Python package.
+Invoke `scripts/ros_release_python` in the root folder of the Python package to ensure that the packages can be built.
+If this succeeds invoke the same command with the `--upload` argument to actually push the packages to the servers.
 
 Release a Python package only into new suites
 ---------------------------------------------
