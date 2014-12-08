@@ -136,12 +136,8 @@ def includedeb(name, version, debian_version, upload, python_version):
     option_name = 'Package%s' % ('' if python_version == 2 else str(python_version))
     if config.has_option('DEFAULT', option_name):
         pkg_name = config.get('DEFAULT', option_name)
-        folder_name = pkg_name
     else:
-        # this is only for backward compatibility with previous released packages
         pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
-        folder_name = name
-        #folder_name = folder_name.replace('-', '')
 
     includedeb_path = _get_config_path('includedeb.cf')
 
@@ -154,7 +150,7 @@ def includedeb(name, version, debian_version, upload, python_version):
         for suite in suites:
             cmd = includedeb_command.split(' ')
             cmd.append(suite)
-            cmd.append('%s/pool/main/%s/%s/%s_%s-%s_all.deb' % (basepath, folder_name[0], folder_name, pkg_name, version, debian_version))
+            cmd.append('%s/pool/main/%s/%s/%s_%s-%s_all.deb' % (basepath, pkg_name[0], pkg_name, pkg_name, version, debian_version))
             cmds.append(cmd)
 
     _print_subsection('Propagate Debian package to listed suites...')
