@@ -1,4 +1,4 @@
-[all-bootstrap]
+[ros-bootstrap]
 method                  = scp
 login                   = rosbuild
 fqdn                    = repos.ros.org
