@@ -49,3 +49,9 @@ Release a Python package only into new suites
 ---------------------------------------------
 
 Invoke `scripts/ros_release_python --includedeb --upload` in the root folder of the Python package.
+
+Sync into building / testing / main repos
+-----------------------------------------
+
+This tool only uploads the generated Debian packages into the `bootstrap` repository.
+To make the packages available in the building / testing / main repos the Jenkins job to "import upstream" must be run.
