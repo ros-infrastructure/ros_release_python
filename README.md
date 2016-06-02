@@ -19,8 +19,11 @@ The following dependencies need to be installed before being able to run the `ro
  * Install PIP:
    * `sudo apt-get install python-pip python3-pip`
  * Install stdeb (0.8.4 or higher):
-   * `sudo pip install [--upgrade] stdeb`
-   * `sudo pip3 install [--upgrade] stdeb`
+   * On Ubuntu Wily and newer:
+     * `sudo apt-get install python-stdeb python3-stdeb`
+   * Otherwise via pip:
+     * `sudo pip install [--upgrade] stdeb`
+     * `sudo pip3 install [--upgrade] stdeb`
 
 Note: Make sure `pip` is for Python2, because sometimes when you install pip for Python3 (like on precise) it overwrites `pip` as pip for Python3. You can explicitly invoke pip from Python2 like this:
 
