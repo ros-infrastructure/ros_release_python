@@ -50,7 +50,7 @@ If this succeeds invoke the same command with the `--upload` argument to actuall
 Release a Python package only into new suites
 ---------------------------------------------
 
-Invoke `scripts/ros_release_python --includedeb --upload` in the root folder of the Python package.
+Invoke `scripts/ros_release_python --include --upload` in the root folder of the Python package.
 
 Sync into building / testing / main repos
 -----------------------------------------

@@ -1,3 +1,4 @@
 [ros-bootstrap]
 basepath           = /var/www/repos/ros_bootstrap
+includedsc_command = ssh rosbuild@repos.ros.org -- /usr/bin/reprepro -b /var/www/repos/ros_bootstrap -V includedsc
 includedeb_command = ssh rosbuild@repos.ros.org -- /usr/bin/reprepro -b /var/www/repos/ros_bootstrap -V includedeb
