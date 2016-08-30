@@ -123,7 +123,7 @@ def clean(name):
             shutil.rmtree(subfolder)
 
 
-def includedeb(name, version, debian_version, upload, python_version):
+def include(name, version, debian_version, upload, python_version):
     config = RawConfigParser()
     config.read('stdeb.cfg')
     if python_version == 3 and config.has_option('DEFAULT', 'Suite3'):
@@ -139,15 +139,20 @@ def includedeb(name, version, debian_version, upload, python_version):
     else:
         pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
 
-    includedeb_path = _get_config_path('includedeb.cf')
+    include_path = _get_config_path('include.cf')
 
     config = RawConfigParser()
-    config.read(includedeb_path)
+    config.read(include_path)
     cmds = []
     for apt_repo in config.sections():
         basepath = config.get(apt_repo, 'basepath')
+        includedsc_command = config.get(apt_repo, 'includedsc_command')
         includedeb_command = config.get(apt_repo, 'includedeb_command')
         for suite in suites:
+            cmd = includedsc_command.split(' ')
+            cmd.append(suite)
+            cmd.append('%s/pool/main/%s/%s/%s_%s-%s.dsc' % (basepath, pkg_name[0], pkg_name, pkg_name, version, debian_version))
+            cmds.append(cmd)
             cmd = includedeb_command.split(' ')
             cmd.append(suite)
             cmd.append('%s/pool/main/%s/%s/%s_%s-%s_all.deb' % (basepath, pkg_name[0], pkg_name, pkg_name, version, debian_version))
@@ -210,10 +215,10 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('--debug', action='store_true', default=False,
                         help='Print stacktrace to stderr in case of errors.')
     parser.add_argument('--upload', action='store_true', default=False,
-                        help='Perform actual upload / includedeb steps')
+                        help='Perform actual upload / include steps')
     parser.add_argument('--ignore-upload-error', action='store_true', default=False,
                         help='Continue on upload errors (only for Debian release targets)')
-    parser.add_argument('--includedeb', action='store_true', default=False,
+    parser.add_argument('--include', action='store_true', default=False,
                         help='Copy already released and uploaded Debian packages version into new list of suites')
     parser.add_argument('--debian-version', default='1',
                         help='The debian version suffix (default: 1)')
@@ -224,7 +229,7 @@ def main(argv=sys.argv[1:]):
         (name, version) = get_name_and_version()
         if args.clean:
             clean(name)
-        elif not args.includedeb:
+        elif not args.include:
             for target in args.targets:
                 if target == 'deb2':
                     release_to_debian(name, version, args.debian_version, args.upload, args.ignore_upload_error, 2)
@@ -235,9 +240,9 @@ def main(argv=sys.argv[1:]):
         else:
             for target in args.targets:
                 if target == 'deb2':
-                    includedeb(name, version, args.debian_version, args.upload, 2)
+                    include(name, version, args.debian_version, args.upload, 2)
                 if target == 'deb3':
-                    includedeb(name, version, args.debian_version, args.upload, 3)
+                    include(name, version, args.debian_version, args.upload, 3)
     except subprocess.CalledProcessError as e:
         print('\nCommand [%s] returned non-zero exit status %d' % (' '.join(e.cmd), e.returncode), file=sys.stderr)
         return 1
