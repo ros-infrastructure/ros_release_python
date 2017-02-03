@@ -4,8 +4,10 @@ from __future__ import print_function
 
 import argparse
 try:
+    from configparser import DEFAULTSECT
     from configparser import RawConfigParser
 except ImportError:
+    from ConfigParser import DEFAULTSECT
     from ConfigParser import RawConfigParser
 import os
 import shutil
@@ -27,7 +29,6 @@ def get_name_and_version():
 
 def release_to_pip(name, version, upload):
     _print_section('Release Python package to PIP')
-    clean(name)
 
     cmd = ['python2', 'setup.py', 'sdist']
     upload_targets = ['register', 'upload']
@@ -54,9 +55,8 @@ def release_to_pip(name, version, upload):
         subprocess.check_call(upload_cmd)
 
 
-def release_to_debian(name, version, debian_version, upload, ignore_upload_error, python_version):
+def release_to_debian(name, version, debian_version, upload, ignore_upload_error, python_version, setup_env_vars=None):
     _print_section('Release Python %d package to apt repository' % python_version)
-    clean(name)
 
     source_pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
     source_pkg_name = source_pkg_name.replace('_', '-')
@@ -76,8 +76,18 @@ def release_to_debian(name, version, debian_version, upload, ignore_upload_error
                '--force-x-python3-version',
                '--debian-version', debian_version,
                'bdist_deb']
-        print('# ' + ' '.join(cmd))
-        subprocess.check_call(cmd)
+
+        add_env = {}
+        if setup_env_vars:
+            for env_var in setup_env_vars.split(' '):
+                key, value = env_var.split('=', 1)
+                add_env[key] = value
+
+        print(
+            '# ' + ' '.join(cmd) +
+            (' [with %s]' % ' '.join(['%s=%s' % (k, v) for k, v in add_env.items()])
+             if add_env else ''))
+        subprocess.check_call(cmd, env=dict(os.environ, **add_env))
     finally:
         tarball = '%s-%s.tar.gz' % (name, version)
         if os.path.isfile(tarball):
@@ -115,8 +125,23 @@ def release_to_debian(name, version, debian_version, upload, ignore_upload_error
                     raise
 
 
-def clean(name):
-    subfolders = ['deb_dist', 'dist', '%s.egg-info' % name, 'src/%s.egg-info' % name]
+def clean_all(names):
+    subfolders = ['deb_dist', 'dist']
+    for name in names:
+        subfolders += ['%s.egg-info' % name, 'src/%s.egg-info' % name]
+    remove_trees(subfolders)
+
+
+def clean_other_debian_sources(other_names, version, python_version):
+    subfolders = []
+    for name in other_names:
+        folder_name = 'python%s-%s-%s' % \
+            ('' if python_version == 2 else str(python_version), name.replace('_', '-'), version)
+        subfolders.append('deb_dist/' + folder_name)
+    remove_trees(subfolders)
+
+
+def remove_trees(subfolders):
     for subfolder in subfolders:
         if os.path.exists(subfolder):
             _print_subsection("Deleting subfolder '%s'..." % subfolder)
@@ -126,16 +151,17 @@ def clean(name):
 def include(name, version, debian_version, upload, python_version):
     config = RawConfigParser()
     config.read('stdeb.cfg')
-    if python_version == 3 and config.has_option('DEFAULT', 'Suite3'):
-        suites = config.get('DEFAULT', 'Suite3').split(' ')
+    section = name if name in config.sections() else DEFAULTSECT
+    if python_version == 3 and config.has_option(section, 'Suite3'):
+        suites = config.get(section, 'Suite3').split(' ')
     else:
-        suites = config.get('DEFAULT', 'Suite').split(' ')
+        suites = config.get(section, 'Suite').split(' ')
 
     name = name.replace('_', '-')
 
     option_name = 'Package%s' % ('' if python_version == 2 else str(python_version))
-    if config.has_option('DEFAULT', option_name):
-        pkg_name = config.get('DEFAULT', option_name)
+    if config.has_option(section, option_name):
+        pkg_name = config.get(section, option_name)
     else:
         pkg_name = 'python%s-%s' % ('' if python_version == 2 else str(python_version), name)
 
@@ -226,23 +252,47 @@ def main(argv=sys.argv[1:]):
     args = parser.parse_args(argv)
 
     try:
-        (name, version) = get_name_and_version()
-        if args.clean:
-            clean(name)
-        elif not args.include:
+        while True:
+            (pkg_name, version) = get_name_and_version()
+
+            config = RawConfigParser()
+            config.read('stdeb.cfg')
+            sections = config.sections()
+            if sections:
+                names = sections
+            else:
+                names = [pkg_name]
+                sections = [DEFAULTSECT]
+
+            if args.clean:
+                clean_all(names)
+                break
+
             for target in args.targets:
-                if target == 'deb2':
-                    release_to_debian(name, version, args.debian_version, args.upload, args.ignore_upload_error, 2)
-                if target == 'deb3':
-                    release_to_debian(name, version, args.debian_version, args.upload, args.ignore_upload_error, 3)
-                if target == 'pip':
-                    release_to_pip(name, version, args.upload)
-        else:
-            for target in args.targets:
-                if target == 'deb2':
-                    include(name, version, args.debian_version, args.upload, 2)
-                if target == 'deb3':
-                    include(name, version, args.debian_version, args.upload, 3)
+                if target not in ['deb2', 'deb3']:
+                    continue
+                python_version = int(target[-1])
+                if not args.include:
+                    clean_all(names)
+                    for name, section in zip(names, sections):
+                        # remove other sources from deb_dist folder
+                        # otherwise bdist_deb is unsure about the source dir
+                        clean_other_debian_sources(set(names) - set([name]), version, python_version)
+                        setup_env_vars = None
+                        if config.has_option(section, 'Setup-Env-Vars'):
+                            setup_env_vars = config.get(section, 'Setup-Env-Vars')
+                        release_to_debian(
+                            name, version, args.debian_version, args.upload,
+                            args.ignore_upload_error, python_version,
+                            setup_env_vars=setup_env_vars)
+                else:
+                    include(name, version, args.debian_version, args.upload, python_version)
+
+            if not args.include and 'pip' in args.targets:
+                release_to_pip(name, version, args.upload)
+
+            break  # while True
+
     except subprocess.CalledProcessError as e:
         print('\nCommand [%s] returned non-zero exit status %d' % (' '.join(e.cmd), e.returncode), file=sys.stderr)
         return 1
