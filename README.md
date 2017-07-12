@@ -18,6 +18,9 @@ The following dependencies need to be installed before being able to run the `ro
    * `sudo apt-get install python-all python3-all`
  * Install PIP:
    * `sudo apt-get install python-pip python3-pip`
+ * Install up-to-date setuptools via PIP (if necessary):
+   * `pip3 install --upgrade setuptools`
+   * See https://packaging.python.org/guides/tool-recommendations/#publishing-platform-migration for more information why that is necessary.
  * Install stdeb (0.8.4 or higher) via PIP:
    * `sudo pip install [--upgrade] stdeb`
    * `sudo pip3 install [--upgrade] stdeb`
