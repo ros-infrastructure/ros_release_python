@@ -17,7 +17,7 @@ import sys
 
 def get_name_and_version():
     _print_section('Determine package name and version')
-    output = subprocess.check_output(['python', 'setup.py', '--name', '--version'])
+    output = subprocess.check_output(['python3', 'setup.py', '--name', '--version'])
     lines = output.splitlines()
     assert len(lines) == 2
     name = lines[0].decode('ascii')
@@ -30,12 +30,12 @@ def get_name_and_version():
 def release_to_pip(name, version, upload):
     _print_section('Release Python package to PIP')
 
-    cmd = ['python2', 'setup.py', 'sdist']
-    upload_targets = ['register', 'upload']
+    cmd = ['python3', 'setup.py', 'sdist']
+    upload_targets = ['upload']
     msgs = ['Building sdist package']
     if upload:
         cmd.extend(upload_targets)
-        msgs.append('register and upload package to PIP')
+        msgs.append('upload package to PIP')
     _print_subsection('%s...' % ', '.join(msgs))
     if upload:
         print('# ' + ' '.join(cmd))
