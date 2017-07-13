@@ -286,7 +286,8 @@ def main(argv=sys.argv[1:]):
                             args.ignore_upload_error, python_version,
                             setup_env_vars=setup_env_vars)
                 else:
-                    include(pkg_name, version, args.debian_version, args.upload, python_version)
+                    for name in names:
+                        include(name, version, args.debian_version, args.upload, python_version)
 
             if not args.include and 'pip' in args.targets:
                 release_to_pip(pkg_name, version, args.upload)
