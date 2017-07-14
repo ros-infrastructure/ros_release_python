@@ -246,8 +246,8 @@ def main(argv=sys.argv[1:]):
                         help='Continue on upload errors (only for Debian release targets)')
     parser.add_argument('--include', action='store_true', default=False,
                         help='Copy already released and uploaded Debian packages version into new list of suites')
-    parser.add_argument('--debian-version', default='1',
-                        help='The debian version suffix (default: 1)')
+    parser.add_argument('--debian-version',
+                        help="The debian version suffix (default: '1' if not specified in 'stdeb.cfg')")
 
     args = parser.parse_args(argv)
 
@@ -274,7 +274,15 @@ def main(argv=sys.argv[1:]):
                 python_version = int(target[-1])
                 if not args.include:
                     clean_all(names)
-                    for name, section in zip(names, sections):
+
+                for name, section in zip(names, sections):
+                    debian_version = '1'
+                    if args.debian_version is not None:
+                        debian_version = args.debian_version
+                    if config.has_option(section, 'Debian-Version'):
+                        debian_version = config.get(section, 'Debian-Version')
+
+                    if not args.include:
                         # remove other sources from deb_dist folder
                         # otherwise bdist_deb is unsure about the source dir
                         clean_other_debian_sources(set(names) - set([name]), version, python_version)
@@ -282,12 +290,11 @@ def main(argv=sys.argv[1:]):
                         if config.has_option(section, 'Setup-Env-Vars'):
                             setup_env_vars = config.get(section, 'Setup-Env-Vars')
                         release_to_debian(
-                            name, version, args.debian_version, args.upload,
+                            name, version, debian_version, args.upload,
                             args.ignore_upload_error, python_version,
                             setup_env_vars=setup_env_vars)
-                else:
-                    for name in names:
-                        include(name, version, args.debian_version, args.upload, python_version)
+                    else:
+                        include(name, version, debian_version, args.upload, python_version)
 
             if not args.include and 'pip' in args.targets:
                 release_to_pip(pkg_name, version, args.upload)
