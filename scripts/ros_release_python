@@ -30,29 +30,31 @@ def get_name_and_version():
 def release_to_pip(name, version, upload):
     _print_section('Release Python package to PIP')
 
-    cmd = ['python3', 'setup.py', 'sdist']
-    upload_targets = ['upload']
-    msgs = ['Building sdist package']
-    if upload:
-        cmd.extend(upload_targets)
-        msgs.append('upload package to PIP')
-    _print_subsection('%s...' % ', '.join(msgs))
-    if upload:
-        print('# ' + ' '.join(cmd))
-    else:
-        print('# ' + ' '.join(cmd) + '  # ' + ' '.join(upload_targets))
+    _print_subsection('Building sdist and bdist_wheel packages...')
+    cmd = ['python3', 'setup.py', 'sdist', 'bdist_wheel']
+    print('# ' + ' '.join(cmd))
     subprocess.check_call(cmd)
 
     tarball = 'dist/%s-%s.tar.gz' % (name, version)
     assert os.path.exists(tarball), "Failed to generate source tarball '%s'" % tarball
-    upload_cmd = ['scp', tarball, 'ros@ftp-osl.osuosl.org:/home/ros/data/download.ros.org/downloads/%s' % name]
+
+    upload_cmd = ['twine', 'upload', '-s', 'dist/*']
+    if upload:
+        _print_subsection('Uploading package to PIP...')
+    else:
+        _print_subsection('Skip uploading package to PIP')
+    print('# ' + ' '.join(upload_cmd))
+    if upload:
+        subprocess.check_call(upload_cmd)
+
+    scp_cmd = ['scp', tarball, 'ros@ftp-osl.osuosl.org:/home/ros/data/download.ros.org/downloads/%s' % name]
     if upload:
         _print_subsection('Uploading package to download server...')
     else:
         _print_subsection('Skip uploading package to download server')
-    print('# ' + ' '.join(upload_cmd))
+    print('# ' + ' '.join(scp_cmd))
     if upload:
-        subprocess.check_call(upload_cmd)
+        subprocess.check_call(scp_cmd)
 
 
 def release_to_debian(name, version, debian_version, upload, ignore_upload_error, python_version, setup_env_vars=None):
@@ -126,9 +128,11 @@ def release_to_debian(name, version, debian_version, upload, ignore_upload_error
 
 
 def clean_all(names):
-    subfolders = ['deb_dist', 'dist']
+    subfolders = ['build', 'deb_dist', 'dist']
     for name in names:
         subfolders += ['%s.egg-info' % name, 'src/%s.egg-info' % name]
+        if '-' in name:
+            subfolders += ['%s.egg-info' % name.replace('-', '_')]
     remove_trees(subfolders)
 
 
