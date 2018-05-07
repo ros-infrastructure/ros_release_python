@@ -47,15 +47,6 @@ def release_to_pip(name, version, upload):
     if upload:
         subprocess.check_call(upload_cmd)
 
-    scp_cmd = ['scp', tarball, 'ros@ftp-osl.osuosl.org:/home/ros/data/download.ros.org/downloads/%s' % name]
-    if upload:
-        _print_subsection('Uploading package to download server...')
-    else:
-        _print_subsection('Skip uploading package to download server')
-    print('# ' + ' '.join(scp_cmd))
-    if upload:
-        subprocess.check_call(scp_cmd)
-
 
 def release_to_debian(name, version, debian_version, upload, ignore_upload_error, python_version, setup_env_vars=None):
     _print_section('Release Python %d package to apt repository' % python_version)
