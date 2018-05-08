@@ -21,11 +21,13 @@ The following dependencies need to be installed before being able to run the `ro
  * Install up-to-date setuptools via PIP (if necessary):
    * `pip3 install --upgrade setuptools`
    * See https://packaging.python.org/guides/tool-recommendations/#publishing-platform-migration for more information why that is necessary.
- * Install stdeb (0.8.4 or higher) via PIP:
+ * Install `stdeb` (0.8.4 or higher) via PIP:
    * `sudo pip install [--upgrade] stdeb`
    * `sudo pip3 install [--upgrade] stdeb`
    * Do **not** use the Debian packages on Wily and newer.
      They will embed a newer Python dependency into the control file (2.7.5, 3.3.2) which breaks the package on older distributions like *Precise*.
+ * Install `twine` via PIP:
+   * `sudo pip3 install [--upgrade] twine`
 
 Note: Make sure `pip` is for Python2, because sometimes when you install pip for Python3 (like on precise) it overwrites `pip` as pip for Python3. You can explicitly invoke pip from Python2 like this:
 
