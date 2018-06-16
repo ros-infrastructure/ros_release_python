@@ -96,12 +96,14 @@ def release_to_debian(name, version, debian_version, upload, ignore_upload_error
     for apt_repo in config.sections():
         changes_file = 'deb_dist/%s_%s-%s_source.changes' % (source_pkg_name, version, debian_version)
         assert os.path.exists(changes_file), "Failed to generate source changes file '%s'" % changes_file
+        strip_buildinfo(changes_file)
         cmds.append(['dput', '-u', '-c', dput_path, apt_repo, changes_file])
 
     # upload binary (.deb) packages
     for apt_repo in config.sections():
         changes_file = 'deb_dist/%s_%s-%s_amd64.changes' % (source_pkg_name, version, debian_version)
         assert os.path.exists(changes_file), "Failed to generate binary changes file '%s'" % changes_file
+        strip_buildinfo(changes_file)
         cmds.append(['dput', '-u', '-c', dput_path, apt_repo, changes_file])
 
     if upload:
@@ -116,6 +118,17 @@ def release_to_debian(name, version, debian_version, upload, ignore_upload_error
             except subprocess.CalledProcessError:
                 if not ignore_upload_error:
                     raise
+
+
+def strip_buildinfo(path):
+    with open(path, 'r') as h:
+        content = h.read()
+    lines = content.splitlines()
+    with open(path, 'w') as h:
+        for line in lines:
+            if line.startswith(' ') and line.endswith('.buildinfo'):
+                continue
+            h.write(line + '\n')
 
 
 def clean_all(names):
