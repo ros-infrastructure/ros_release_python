@@ -127,6 +127,9 @@ def strip_buildinfo(path):
     with open(path, 'w') as h:
         for line in lines:
             if line.startswith(' ') and line.endswith('.buildinfo'):
+                print(
+                    'Removing .buildinfo from changes file [%s] for older reprepro compatibility. '
+                    'https://github.com/ros-infrastructure/ros_release_python/pull/22' % path)
                 continue
             h.write(line + '\n')
 
