@@ -8,6 +8,10 @@ The following dependencies need to be installed before being able to run the `ro
 
  * Install dput:
    * `sudo apt-get install dput`
+ * Install fakeroot:
+   * `sudo apt-get install fakeroot`
+ * Install debhelper:
+   * `sudo apt-get install debhelper`
  * Install apt-file:
    * `sudo apt-get install apt-file`
    * and run:
