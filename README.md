@@ -11,7 +11,7 @@ The following dependencies need to be installed before being able to run the `ro
  * Install apt-file:
    * `sudo apt-get install apt-file`
    * and run:
-   * `apt-file update`
+   * `sudo apt-file update`
  * Install setuptools:
    * `sudo apt-get install python-setuptools python3-setuptools`
  * Install Python "all":
