@@ -27,11 +27,13 @@ def get_name_and_version():
     return name, version
 
 
-def release_to_pip(name, version, upload):
+def release_to_pip(name, version, upload, skip_wheel=False):
     _print_section('Release Python package to PIP')
 
-    _print_subsection('Building sdist and bdist_wheel packages...')
-    cmd = ['python3', 'setup.py', 'sdist', 'bdist_wheel']
+    _print_subsection('Building sdist%s packages...' % ('' if skip_wheel else ' and bdist_wheel'))
+    cmd = ['python3', 'setup.py', 'sdist']
+    if not skip_wheel:
+        cmd.append('bdist_wheel')
     print('# ' + ' '.join(cmd))
     subprocess.check_call(cmd)
 
@@ -259,6 +261,8 @@ def main(argv=sys.argv[1:]):
                         help='Copy already released and uploaded Debian packages version into new list of suites')
     parser.add_argument('--debian-version',
                         help="The debian version suffix (default: '1' if not specified in 'stdeb.cfg')")
+    parser.add_argument('--skip-wheel', action='store_true', default=False,
+                        help='Skip creation of a wheel (only for the PIP target)')
 
     args = parser.parse_args(argv)
 
@@ -308,7 +312,7 @@ def main(argv=sys.argv[1:]):
                         include(name, version, debian_version, args.upload, python_version)
 
             if not args.include and 'pip' in args.targets:
-                release_to_pip(pkg_name, version, args.upload)
+                release_to_pip(pkg_name, version, args.upload, skip_wheel=args.skip_wheel)
 
             break  # while True
 
