@@ -241,6 +241,27 @@ class TargetAction(argparse.Action):
 
 
 def main(argv=sys.argv[1:]):
+    (pkg_name, version) = get_name_and_version()
+
+    config = RawConfigParser()
+    config.read('stdeb.cfg')
+    sections = config.sections()
+    if sections:
+        names = sections
+    else:
+        names = [pkg_name]
+        sections = [DEFAULTSECT]
+
+    # remove target choices if the package doesn't support them
+    for section in sections:
+        for version in ('2', '3'):
+            if config.has_option(section, 'No-Python' + version):
+                try:
+                    TargetAction.CHOICES.remove('deb' + version)
+                    print('Skipping Python ' + version)
+                except ValueError:
+                    pass
+
     parser = argparse.ArgumentParser(
         description='Release a Python package into PIP as well as the ROS apt repositories.')
 
@@ -264,17 +285,6 @@ def main(argv=sys.argv[1:]):
 
     try:
         while True:
-            (pkg_name, version) = get_name_and_version()
-
-            config = RawConfigParser()
-            config.read('stdeb.cfg')
-            sections = config.sections()
-            if sections:
-                names = sections
-            else:
-                names = [pkg_name]
-                sections = [DEFAULTSECT]
-
             if args.clean:
                 clean_all(names)
                 break
