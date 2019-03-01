@@ -254,11 +254,11 @@ def main(argv=sys.argv[1:]):
 
     # remove target choices if the package doesn't support them
     for section in sections:
-        for version in ('2', '3'):
-            if config.has_option(section, 'No-Python' + version):
+        for python_version in ('2', '3'):
+            if config.has_option(section, 'No-Python' + python_version):
                 try:
-                    TargetAction.CHOICES.remove('deb' + version)
-                    print('Skipping Python ' + version)
+                    TargetAction.CHOICES.remove('deb' + python_version)
+                    print('Skipping Python ' + python_version)
                 except ValueError:
                     pass
 
