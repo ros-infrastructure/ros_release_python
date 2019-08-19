@@ -318,6 +318,7 @@ def main(argv=sys.argv[1:]):
                         include(name, version, debian_version, args.upload, python_version)
 
             if not args.include and 'pip' in args.targets:
+                clean_all(names)
                 release_to_pip(pkg_name, version, args.upload)
 
             break  # while True
