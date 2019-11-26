@@ -1,4 +1,5 @@
 [ros-bootstrap]
-basepath           = /var/www/repos/ros_bootstrap
-includedsc_command = ssh rosbuild@repos.ros.org -- /usr/bin/reprepro -b /var/www/repos/ros_bootstrap -V includedsc
-includedeb_command = ssh rosbuild@repos.ros.org -- /usr/bin/reprepro -b /var/www/repos/ros_bootstrap -V includedeb
+basepath           = /home/apt/public/repos/ros_bootstrap
+includedsc_command = ssh apt@aptly.osrfoundation.org -- /usr/bin/aptly repo add ros_bootstrap-{suite} {basepath}/pool/main/{pkg_initial}/{pkg_name}/{pkg_name}_{version}-{debian_version}.dsc
+includedeb_command = ssh apt@aptly.osrfoundation.org -- /usr/bin/aptly repo add ros_bootstrap-{suite} {basepath}/pool/main/{pkg_initial}/{pkg_name}/{pkg_name}_{version}-{debian_version}_all.deb
+post_include_command = ssh apt@aptly.osrfoundation.org -- /home/apt/bin/snapshot-and-publish-all ros_bootstrap

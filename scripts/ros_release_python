@@ -186,14 +186,22 @@ def include(name, version, debian_version, upload, python_version):
         includedsc_command = config.get(apt_repo, 'includedsc_command')
         includedeb_command = config.get(apt_repo, 'includedeb_command')
         for suite in suites:
-            cmd = includedsc_command.split(' ')
-            cmd.append(suite)
-            cmd.append('%s/pool/main/%s/%s/%s_%s-%s.dsc' % (basepath, pkg_name[0], pkg_name, pkg_name, version, debian_version))
-            cmds.append(cmd)
-            cmd = includedeb_command.split(' ')
-            cmd.append(suite)
-            cmd.append('%s/pool/main/%s/%s/%s_%s-%s_all.deb' % (basepath, pkg_name[0], pkg_name, pkg_name, version, debian_version))
-            cmds.append(cmd)
+            cmds.append(includedsc_command.format(
+                suite=suite,
+                basepath=basepath,
+                pkg_initial=pkg_name[0],
+                pkg_name=pkg_name,
+                version=version,
+                debian_version=debian_version).split(' '))
+            cmds.append(includedeb_command.format(
+                suite=suite,
+                basepath=basepath,
+                pkg_initial=pkg_name[0],
+                pkg_name=pkg_name,
+                version=version,
+                debian_version=debian_version).split(' '))
+        if config.has_option(apt_repo, 'post_include_command'):
+            cmds.append(config.get(apt_repo, 'post_include_command').split(' '))
 
     _print_subsection('Propagate Debian package to listed suites...')
     for cmd in cmds:
