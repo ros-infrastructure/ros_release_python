@@ -25,7 +25,7 @@ The following dependencies need to be installed before being able to run the `ro
  * Install up-to-date setuptools via PIP (if necessary):
    * `pip3 install --upgrade setuptools`
    * See https://packaging.python.org/guides/tool-recommendations/#publishing-platform-migration for more information why that is necessary.
- * Install `stdeb` (0.8.4 or higher) via PIP:
+ * Install `stdeb` (0.9.0 or higher) via PIP:
    * `sudo pip install [--upgrade] stdeb`
    * `sudo pip3 install [--upgrade] stdeb`
    * Do **not** use the Debian packages on Wily and newer.
@@ -60,6 +60,12 @@ Release a Python package only into new suites
 ---------------------------------------------
 
 Invoke `scripts/ros_release_python --include --upload` in the root folder of the Python package.
+
+Releasing only python3 packages into new suites
+-----------------------------------------------
+
+As of stdeb 0.9.0 a `Suite3` option is allowed in stdeb.cfg when building python2 and python3 packages separately as these scripts do.
+You can use this feature to prevent the release of python2 packages into new distributions where we do not support python2 (e.g. Ubuntu 20.04 Focal).
 
 Sync into building / testing / main repos
 -----------------------------------------
