@@ -33,7 +33,7 @@ def release_to_pip(name, version, upload):
     _print_subsection('Building sdist and bdist_wheel packages...')
     cmd = ['python3', 'setup.py', 'sdist', 'bdist_wheel']
     print('# ' + ' '.join(cmd))
-    subprocess.check_call(cmd)
+    subprocess.check_call(cmd, env=dict(os.environ, {'PYTHON_BUILD_WHEEL': '1'}))
 
     tarball = 'dist/%s-%s.tar.gz' % (name, version)
     assert os.path.exists(tarball), "Failed to generate source tarball '%s'" % tarball
