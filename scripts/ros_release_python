@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 
@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 
 
 def get_name_and_version():
@@ -80,7 +81,22 @@ def release_to_debian(name, version, debian_version, upload, ignore_upload_error
             '# ' + ' '.join(cmd) +
             (' [with %s]' % ' '.join(['%s=%s' % (k, v) for k, v in add_env.items()])
              if add_env else ''))
-        subprocess.check_call(cmd, env=dict(os.environ, **add_env))
+        # when doing a Python 2 release but no `python` executable is present
+        # use a temporary symlink to `python2` otherwise `stdeb` fails
+        symlink_python2 = python_version == 2 and not shutil.which('python') and shutil.which('python2')
+        if symlink_python2:
+            tmpdir = tempfile.mkdtemp()
+            # if the Python executable is not in a directory named `bin`
+            # the absolute path is used in the generated shebang lines
+            tmpbindir = os.path.join(tmpdir, 'bin')
+            os.makedirs(tmpbindir)
+            os.symlink(shutil.which('python2'), os.path.join(tmpbindir, 'python'))
+            add_env['PATH'] = tmpbindir + os.pathsep + os.environ.get('PATH')
+        try:
+            subprocess.check_call(cmd, env=dict(os.environ, **add_env))
+        finally:
+            if symlink_python2:
+                shutil.rmtree(tmpdir)
     finally:
         tarball = '%s-%s.tar.gz' % (name, version)
         if os.path.isfile(tarball):
