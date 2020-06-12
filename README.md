@@ -18,14 +18,18 @@ The following dependencies need to be installed before being able to run the `ro
    * `sudo apt-file update`
  * Install setuptools:
    * `sudo apt-get install python-setuptools python3-setuptools`
+   * The Python 2 package can be skipped if only Python 3 releases are made.
  * Install Python "all":
    * `sudo apt-get install python-all python3-all`
+   * The Python 2 package can be skipped if only Python 3 releases are made.
  * Install PIP:
    * `sudo apt-get install python-pip python3-pip`
+   * The Python 2 package can be skipped if only Python 3 releases are made.
+     As of Ubuntu Focal there is no `python-pip` package anymore - it needs to be installed via [get-pip](https://pip.pypa.io/en/stable/installing/#installing-with-get-pip-py) instead.
  * Install up-to-date setuptools via PIP (if necessary):
    * `pip3 install --upgrade setuptools`
    * See https://packaging.python.org/guides/tool-recommendations/#publishing-platform-migration for more information why that is necessary.
- * Install `stdeb` (0.9.0 or higher) via PIP:
+ * Install `stdeb` (0.9.1 or higher) via PIP:
    * `sudo pip install [--upgrade] stdeb`
    * `sudo pip3 install [--upgrade] stdeb`
    * Do **not** use the Debian packages on Wily and newer.
@@ -66,6 +70,12 @@ Releasing only python3 packages into new suites
 
 As of stdeb 0.9.0 a `Suite3` option is allowed in stdeb.cfg when building python2 and python3 packages separately as these scripts do.
 You can use this feature to prevent the release of python2 packages into new distributions where we do not support python2 (e.g. Ubuntu 20.04 Focal).
+
+Releasing Python 2 packages targeting Ubuntu pre-Focal from Focal
+-----------------------------------------------------------------
+
+As of stdeb 0.9.1 a `Python2-Depends-Name` option is allowed in stdeb.cfg to override the Python 2 package name.
+You can use this feature to force the Python 2 package name to be `python` rather than `python2` as it is on Ubuntu Focal.
 
 Sync into building / testing / main repos
 -----------------------------------------
