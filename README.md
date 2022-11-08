@@ -82,3 +82,14 @@ Sync into building / testing / main repos
 
 This tool only uploads the generated Debian packages into the `bootstrap` repository.
 To make the packages available in the building / testing / main repos the Jenkins job to "import upstream" must be run.
+
+
+Quick usage via rocker
+----------------------
+
+If you have your ssh and pypi credentials available in your home directory.
+
+* `docker build -t rrp .`
+* `rocker --home --user rrp`
+* `cd <PATH TO PACKAGE>`
+* `/ros_release_python/scripts/ros_release_python <ARGS>`
