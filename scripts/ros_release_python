@@ -327,6 +327,10 @@ def main(argv=sys.argv[1:]):
                     if config.has_option(section, 'Debian-Version'):
                         debian_version = config.get(section, 'Debian-Version')
 
+                    debian_upstream_version = config.get(section, 'Upstream-Version-Prefix', fallback='')
+                    debian_upstream_version += version
+                    debian_upstream_version += config.get(section, 'Upstream-Version-Suffix', fallback='')
+
                     if not args.include:
                         # remove other sources from deb_dist folder
                         # otherwise bdist_deb is unsure about the source dir
@@ -335,11 +339,11 @@ def main(argv=sys.argv[1:]):
                         if config.has_option(section, 'Setup-Env-Vars'):
                             setup_env_vars = config.get(section, 'Setup-Env-Vars')
                         release_to_debian(
-                            name, version, debian_version, args.upload,
+                            name, debian_upstream_version, debian_version, args.upload,
                             args.ignore_upload_error, python_version,
                             setup_env_vars=setup_env_vars)
                     else:
-                        include(name, version, debian_version, args.upload, python_version)
+                        include(name, debian_upstream_version, debian_version, args.upload, python_version)
 
             if not args.include and 'pip' in args.targets:
                 clean_all(names)
