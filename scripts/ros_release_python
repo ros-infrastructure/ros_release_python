@@ -39,7 +39,7 @@ def release_to_pip(name, version, upload):
     tarball = 'dist/%s-%s.tar.gz' % (name, version)
     assert os.path.exists(tarball), "Failed to generate source tarball '%s'" % tarball
 
-    upload_cmd = ['twine', 'upload', '-s', 'dist/*']
+    upload_cmd = ['twine', 'upload', 'dist/*']
     if upload:
         _print_subsection('Uploading package to PIP...')
     else:
