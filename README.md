@@ -93,3 +93,13 @@ If you have your ssh and pypi credentials available in your home directory.
 * `rocker --home --user rrp`
 * `cd <PATH TO PACKAGE>`
 * `/ros_release_python/scripts/ros_release_python <ARGS>`
+
+Quick usage via docker / podman
+-------------------------------
+
+If you have your ssh and pypi credentials available in your home directory.
+
+* `docker build -t rrp .`
+* `./docker-run.sh <PATH TO PACKAGE>`
+* `cd /projects/<PACKAGE>`
+* `/ros_release_python/scripts/ros_release_python <ARGS>`
