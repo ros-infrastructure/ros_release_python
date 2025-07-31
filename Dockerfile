@@ -27,5 +27,8 @@ ADD scripts/ros_release_python /ros_release_python/scripts
 ADD resources/dput.cf /ros_release_python/resources
 ADD resources/include.cf /ros_release_python/resources
 
+# For running without rocker homedir mapping.
+RUN mkdir /projects
+
 # Needed for dput
 ENV USER=$USER
