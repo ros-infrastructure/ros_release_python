@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -qy \
 RUN pip install -U stdeb
 RUN pip3 install -U stdeb
 RUN pip3 install -U pip
+RUN pip3 install -U wheel  # Older versions use an unsupported metadata format.
 RUN pip3 install -U setuptools
 RUN pip3 install -U twine
 
