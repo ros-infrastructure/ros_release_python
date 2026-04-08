@@ -2,6 +2,6 @@
 method                  = scp
 login                   = apt
 fqdn                    = aptly.osrfoundation.org
-incoming                = /home/apt/ros_bootstrap/incoming
+incoming                = /var/repos/ros_bootstrap/incoming
 run_dinstall            = 0
-post_upload_command     = ssh apt@aptly.osrfoundation.org -- /home/apt/bin/publish-incoming-packages ros_bootstrap
+post_upload_command     = ssh apt@aptly.osrfoundation.org -- /var/repos/bin/publish-incoming-packages ros_bootstrap
