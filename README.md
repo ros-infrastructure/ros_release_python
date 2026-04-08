@@ -85,3 +85,13 @@ If you have your ssh and pypi credentials available in your home directory.
 
 
 On one of my machines I had to increase ulimit to help fakeroot https://github.com/moby/moby/issues/27195 as of rocker 0.2.18 you can add `--ulimit nofile=1024` to work around that. 
+
+Quick usage via docker / podman
+-------------------------------
+
+If you have your ssh and pypi credentials available in your home directory.
+
+* `docker build -t rrp .`
+* `./docker-run.sh <PATH TO PACKAGE>`
+* `cd /projects/<PACKAGE>`
+* `/ros_release_python/scripts/ros_release_python <ARGS>`
