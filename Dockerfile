@@ -10,7 +10,11 @@ RUN apt-get update && apt-get install -qy \
     python3-setuptools \
     python3-all \
     python3-pip \
-    openssh-client # scp for dput
+    openssh-client \
+    sudo 
+
+# scp for dput 
+# sudo Avoid reinstall with rocker
 
 RUN pip3 install -U stdeb
 RUN pip3 install -U pip
